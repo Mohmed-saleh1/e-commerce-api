@@ -1,17 +1,22 @@
 const express = require('express')
+
 const dotenv = require('dotenv')
+
 dotenv.config({path:'config.env'})
 const morgan = require('morgan')
-const apiError = require('./Utils/apError')
+
+const ApiError = require('./Utils/apError')
+
 const app = express();
 
 
 const dbConnection = require('./Config/database')
 const CategoryRoute= require('./Routes/categoryRoute')
 const globalError = require('./MIddlewares/errorMiddleware')
+const subCategoryRoute = require('./Routes/subCategoryRoute')
 
 // Logging the requests
-if (process.env.NODE_ENV =='development') {
+if (process.env.NODE_ENV ==='development') {
 
     console.log(`mode : ${process.env.NODE_ENV}`);
     app.use(morgan('dev'))
@@ -24,13 +29,14 @@ app.use(express.json());
 dbConnection();
 
 //Mount Routes
-app.use('/api/v1/categories',CategoryRoute)
+app.use('/api/v1/categories',CategoryRoute);
+
+app.use('/api/v1/subcategories',subCategoryRoute);
+
 
 //Error handling middleware
 app.all('*',(req,res,next)=>{
-     next(
-        new apiError(`can't find this route ${req.originalUrl}`,400)
-     )
+     next( new ApiError(`can't find this route ${req.originalUrl}`,400) )
 })
 
 //Global Error Handling Middleware

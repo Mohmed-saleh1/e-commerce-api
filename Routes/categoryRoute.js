@@ -1,11 +1,12 @@
 const express = require('express')
+
 const router = express.Router()
 const {
   getCategoryValidation,
   createCategoryValidation,
   updateCategoryValidation,
   deleteCategoryValidation
-} = require('../Utils/categoryValidation')
+} = require('../Utils/validations/categoryValidation')
 const {
   getCategory,
   getCategories,

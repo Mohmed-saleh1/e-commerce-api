@@ -19,7 +19,7 @@
     const {name} = req.body
     const category = await categoryModel.create({name,slug:slugify(name)})
       res.status(201).json({data:category})
-
+      
    })
 
 
