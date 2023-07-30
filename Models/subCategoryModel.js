@@ -15,10 +15,8 @@ const subCategorySchema = mongoose.Schema({
             type:mongoose.Schema.Types.ObjectId,
             ref:'Category',
             required:[true,'subCategory must be belong to parent category '],
-
         },
      },{timestamp:true} )
-     
 const subCategoryModel = mongoose.model('Category',)
 
      module.exports={subCategorySchema,subCategoryModel}
