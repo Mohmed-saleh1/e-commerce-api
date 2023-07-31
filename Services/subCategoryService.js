@@ -6,6 +6,19 @@ const slugify = require('slugify')
 const SubCategoryModel = require('../Models/subCategoryModel')
 const ApiError = require('../Utils/apError')
 
+exports.setCategoryIdFromBody=(req,res,next)=>{
+  if(!req.body.category) req.body.category=req.params.categoryId 
+  next();
+}
+
+exports.createFilterObject = (req,res,next)=>{
+  let filterObject ={};
+  if (req.params.categoryId) {
+   filterObject={category:req.params.categoryId};
+   req.filterObj=filterObject;
+ }
+ next();
+}
 
 // create subcategory
 exports.createSubCategory = asyncHandler(async (req, res) => {
@@ -25,11 +38,7 @@ exports.createSubCategory = asyncHandler(async (req, res) => {
       const limit =req.query.limit|| 3;
       const skip = (page-1)*limit;
 
-      let filterObject ={};
-     if (req.params.categoryId) {
-      filterObject={category:req.params.categoryId}
-    }
-       const subCategories = await SubCategoryModel.find(filterObject).limit(limit).skip(skip)
+       const subCategories = await SubCategoryModel.find(req.filterObj).limit(limit).skip(skip)
 
         res.status(200).json({results:subCategories.length,page,data:subCategories})
       });

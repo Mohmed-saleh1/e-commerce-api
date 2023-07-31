@@ -14,13 +14,16 @@ const {
     getSubCategoryById,
     deleteSubCategoryById,
     updateSubCategoryById,
+    setCategoryIdFromBody,
+    createFilterObject,
     
 
 } = require('../Services/subCategoryService')
 
 router
 .route('/')
-.post(createSubCategoryValidation,createSubCategory).get(getAllSubCategory)
+.post(setCategoryIdFromBody,createSubCategoryValidation,createSubCategory)
+.get(createFilterObject,getAllSubCategory)
 
 router
   .route('/:id')
