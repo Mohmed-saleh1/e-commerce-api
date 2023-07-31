@@ -24,7 +24,12 @@ exports.createSubCategory = asyncHandler(async (req, res) => {
     const page =req.query.page||1;
       const limit =req.query.limit|| 3;
       const skip = (page-1)*limit;
-      const subCategories = await SubCategoryModel.find({}).limit(limit).skip(skip)
+
+      let filterObject ={};
+     if (req.params.categoryId) {
+      filterObject={category:req.params.categoryId}
+    }
+       const subCategories = await SubCategoryModel.find(filterObject).limit(limit).skip(skip)
 
         res.status(200).json({results:subCategories.length,page,data:subCategories})
       });

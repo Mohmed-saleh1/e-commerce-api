@@ -14,7 +14,11 @@ const {
   updateCategory,
   deletCategory,
 }= require('../Services/CategoryService')
-  
+
+const subCategoryRoute = require('./subCategoryRoute')
+
+  router.use('/:categoryId/subcategories',subCategoryRoute)
+
   router.route('/').get(getCategories).post(createCategoryValidation,createCategory)
 
   router.route('/:id').get(getCategoryValidation,getCategory).put(updateCategoryValidation,updateCategory).delete(deleteCategoryValidation,deletCategory)
