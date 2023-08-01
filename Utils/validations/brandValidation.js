@@ -11,7 +11,7 @@ const createBrandValidation = [
     check('name')
     .notEmpty().withMessage(`Brand required `)
     .isLength({max:30}).withMessage('the name is too long')
-    .isLength({min:5}).withMessage( 'the name is too short')
+    .isLength({min:3}).withMessage( 'the name is too short')
     ,validationMiddleware
 ];
 
@@ -24,7 +24,7 @@ const updateBrandValidation = [
     check('name')
     .notEmpty().withMessage(`Brand required `)
     .isLength({max:30}).withMessage('the name is too long')
-    .isLength({min:5}).withMessage( 'the name is too short'),
+    .isLength({min:3}).withMessage( 'the name is too short'),
     validationMiddleware
 ];
 

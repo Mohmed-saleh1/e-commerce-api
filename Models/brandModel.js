@@ -4,7 +4,7 @@ const brandSchema = new mongoose.Schema({
     name:{
         type:String,
         required:[true,'Please Enter you name '],
-        minlength:[5,  'the name is too short'],
+        minlength:[3,  'the name is too short'],
         maxlength:[30, 'the name is too long'],
         unique:[true,  'the brand should be unique']
     },

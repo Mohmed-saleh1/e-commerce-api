@@ -15,6 +15,8 @@ const CategoryRoute= require('./Routes/categoryRoute')
 const globalError = require('./MIddlewares/errorMiddleware')
 const subCategoryRoute = require('./Routes/subCategoryRoute')
 
+const brandRoute = require('./Routes/brandRoute')
+
 // Logging the requests
 if (process.env.NODE_ENV ==='development') {
 
@@ -32,6 +34,9 @@ dbConnection();
 app.use('/api/v1/categories',CategoryRoute);
 
 app.use('/api/v1/subcategories',subCategoryRoute);
+
+app.use('/api/v1/brands',brandRoute);
+
 
 
 //Error handling middleware

@@ -51,7 +51,7 @@ exports.updateBrand = asyncHandler(async(req,res,next)=>{
 })
 
 // delete brand by it's id
-exports.deletbrand = asyncHandler(async(req,res,next)=>{
+exports.deleteBrand = asyncHandler(async(req,res,next)=>{
 
  const {id}=req.params
  const brand = await brandModel.findByIdAndDelete(id);
