@@ -4,7 +4,7 @@ const validatorMiddleware = require('../../MIddlewares/validator');
 const Category = require('../../Models/categoryModel');
 const SubCategory = require('../../Models/subCategoryModel');
 
-exports.createProductValidator = [
+exports.createProductValidation = [
   check('title')
     .isLength({ min: 3 })
     .withMessage('must be at least 3 chars')
@@ -119,12 +119,12 @@ exports.createProductValidator = [
   validatorMiddleware,
 ];
 
-exports.getProductValidator = [
+exports.getProductValidation = [
   check('id').isMongoId().withMessage('Invalid ID formate'),
   validatorMiddleware,
 ];
 
-exports.updateProductValidator = [
+exports.updateProductValidation = [
   check('id').isMongoId().withMessage('Invalid ID formate'),
   body('title')
     .optional()
@@ -135,7 +135,7 @@ exports.updateProductValidator = [
   validatorMiddleware,
 ];
 
-exports.deleteProductValidator = [
+exports.deleteProductValidation = [
   check('id').isMongoId().withMessage('Invalid ID formate'),
   validatorMiddleware,
 ];
