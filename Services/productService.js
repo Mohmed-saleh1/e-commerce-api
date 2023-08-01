@@ -8,7 +8,7 @@ const ProductModel = require('../Models/productModel')
 
 exports.createProduct = asyncHandler (async(req,res)=>{
 
-     req.body.slug = slugify(req.body.title);;
+     req.body.slug = slugify(req.body.title);
 
     const product = await ProductModel.create(req.body);
     res.status(201).json({
@@ -40,6 +40,7 @@ exports.getProduct = asyncHandler (async(req,res,next)=>{
 
 exports.updateProduct = asyncHandler (async(req,res,next)=>{
     const {id}=req.body
+    req.body.slug = slugify(req.body.title);
     const product = await ProductModel.findByIdAndUpdate(id,req.body,{new:true});
     if(!product){  return next(new ApiError(`not product found for this id ${id}`,404)) }
     res.status(200).json({ success: true,data: product })
