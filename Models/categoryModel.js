@@ -15,6 +15,4 @@ const categorySchema = new mongoose.Schema({
     image:String,
 },{timestamp:true})
 
-const categoryModel =  mongoose.model('Categories',categorySchema);
- 
-module.exports={categorySchema,categoryModel}
+exports.categoryModel =  mongoose.model('Categories',categorySchema);

@@ -18,11 +18,15 @@ const {
 } = require('../Utils/validations/productValidation')
 
 
-router.get('/', getProducts)
+router.route('/')
+  .get(getProducts)
+  .post(createProductValidation,createProduct)
+
 
 router.route('/:id')
   .get(getProductValidation,getProduct)
-  .post(createProductValidation,createProduct)
   .put(updateProductValidation,updateProduct)
   .delete(deleteProductValidation,deleteProduct)
   
+
+module.exports=router;

@@ -30,7 +30,7 @@ exports.getProducts = asyncHandler (async(req,res)=>{
 
 // get single product
 exports.getProduct = asyncHandler (async(req,res,next)=>{
-    const {id}=req.body
+    const {id}=req.params
     const product = await ProductModel.findById(id);
     if(!product){  return next(new ApiError(`not product found for this id ${id}`,404)) }
     res.status(200).json({ success: true,data: product })
@@ -39,7 +39,7 @@ exports.getProduct = asyncHandler (async(req,res,next)=>{
 // update product
 
 exports.updateProduct = asyncHandler (async(req,res,next)=>{
-    const {id}=req.body
+    const {id}=req.params
     req.body.slug = slugify(req.body.title);
     const product = await ProductModel.findByIdAndUpdate(id,req.body,{new:true});
     if(!product){  return next(new ApiError(`not product found for this id ${id}`,404)) }
@@ -49,7 +49,7 @@ exports.updateProduct = asyncHandler (async(req,res,next)=>{
 // delete product
 
 exports.deleteProduct = asyncHandler (async(req,res,next)=>{
-    const {id}=req.body
+    const {id}=req.params
     const product = await ProductModel.findByIdAndDelete(id);
     if(!product){  return next(new ApiError(`not product found for this id ${id}`,404)) }
     res.status(200).json({ success: true,data: product })

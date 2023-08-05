@@ -13,10 +13,10 @@ const app = express();
 const dbConnection = require('./Config/database')
 const CategoryRoute= require('./Routes/categoryRoute')
 const globalError = require('./MIddlewares/errorMiddleware')
+
 const subCategoryRoute = require('./Routes/subCategoryRoute')
-
 const brandRoute = require('./Routes/brandRoute')
-
+const productRoute = require('./Routes/productRoute')
 // Logging the requests
 if (process.env.NODE_ENV ==='development') {
 
@@ -36,6 +36,9 @@ app.use('/api/v1/categories',CategoryRoute);
 app.use('/api/v1/subcategories',subCategoryRoute);
 
 app.use('/api/v1/brands',brandRoute);
+
+app.use('/api/v1/products',productRoute);
+
 
 
 
