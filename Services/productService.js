@@ -19,21 +19,19 @@ exports.createProduct = asyncHandler (async(req,res)=>{
 
 // get all products
 exports.getProducts = asyncHandler (async(req,res)=>{
-
+    //pageination
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
     const skip = (page-1)*limit;
 
-    // eslint-disable-next-line node/no-unsupported-features/es-syntax
+    //filteration 
     const queryStringObj = {...req.query}
-    console.log(queryStringObj);
     const excludeFields = ['limit','sort','page','fields'];
-
-    excludeFields.forEach(element => {
-        delete  queryStringObj[element]    
-    });
-
-    const mongooseQuery = ProductModel.find(req.query).limit(limit).skip(skip);
+    excludeFields.forEach((element) => delete  queryStringObj[element]);
+    let queryString = JSON.stringify(queryStringObj);
+    queryString = queryString.replace(/\b(gte|gt|lt|lte)\b/g,(match)=> `$${match}` )
+    queryString = JSON.parse(queryString);
+    const mongooseQuery = ProductModel.find(queryString).limit(limit).skip(skip);
     const products = await mongooseQuery;
     
     res.status(200).json({ result:products.length,page,data: products,success: true})
