@@ -19,20 +19,30 @@ exports.createProduct = asyncHandler (async(req,res)=>{
 
 // get all products
 exports.getProducts = asyncHandler (async(req,res)=>{
-    //pageination
-    const page = req.query.page || 1;
-    const limit = req.query.limit || 10;
-    const skip = (page-1)*limit;
-
-    //filteration 
+    
+     //filteration 
+    // eslint-disable-next-line node/no-unsupported-features/es-syntax
     const queryStringObj = {...req.query}
     const excludeFields = ['limit','sort','page','fields'];
     excludeFields.forEach((element) => delete  queryStringObj[element]);
     let queryString = JSON.stringify(queryStringObj);
     queryString = queryString.replace(/\b(gte|gt|lt|lte)\b/g,(match)=> `$${match}` )
     queryString = JSON.parse(queryString);
-    const mongooseQuery = ProductModel.find(queryString).limit(limit).skip(skip);
+
+    //pageination
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+    const skip = (page-1)*limit;
+
+    let mongooseQuery = ProductModel.find(queryString).limit(limit).skip(skip)
     const products = await mongooseQuery;
+    
+    //sorting
+    if(req.query.sort){
+        mongooseQuery =  mongooseQuery.sort(req.query.sort)
+        console.log(mongooseQuery)
+        console.log(req.query.sort);
+    }
     
     res.status(200).json({ result:products.length,page,data: products,success: true})
 });
