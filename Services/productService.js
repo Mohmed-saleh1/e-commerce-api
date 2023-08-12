@@ -23,28 +23,47 @@ exports.getProducts = asyncHandler (async(req,res)=>{
      //filteration 
     // eslint-disable-next-line node/no-unsupported-features/es-syntax
     const queryStringObj = {...req.query}
+
     const excludeFields = ['limit','sort','page','fields'];
-    excludeFields.forEach((element) => delete  queryStringObj[element]);
+    excludeFields.forEach((field) => delete  queryStringObj[field]);
     let queryString = JSON.stringify(queryStringObj);
+
     queryString = queryString.replace(/\b(gte|gt|lt|lte)\b/g,(match)=> `$${match}` )
-    queryString = JSON.parse(queryString);
+    
 
     //pageination
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
     const skip = (page-1)*limit;
 
-    let mongooseQuery = ProductModel.find(queryString).limit(limit).skip(skip)
+    //build query
+    let mongooseQuery = ProductModel.find(JSON.parse(queryString)).limit(limit).skip(skip)
+    // .populate({path:'Category',select:'name -_id'})
     const products = await mongooseQuery;
     
-    //sorting
+    // sorting
     if(req.query.sort){
         mongooseQuery =  mongooseQuery.sort(req.query.sort)
-        console.log(mongooseQuery)
-        console.log(req.query.sort);
+        console.log(typeof(req.query.sort));
     }
-    
+
+     //selecting
+    if(req.query.fields){
+        const fields = req.query.fields.split(',').join(' ');
+        mongooseQuery =  mongooseQuery.select(fields)
+        console.log(fields);
+    }
     res.status(200).json({ result:products.length,page,data: products,success: true})
+
+    //searching
+    if(req.query.keyword){
+        const query = {}
+        query.$or = [
+            {title: new RegExp(req.query.keyword,'i')},
+            {description: new RegExp(req.query.keyword,'i')}
+        ]
+        mongooseQuery =  mongooseQuery.find(query)
+    }
 });
 
 // get single product
