@@ -1,15 +1,11 @@
+const path = require('path')
+
 const express = require('express')
-
 const dotenv = require('dotenv')
-
 dotenv.config({path:'config.env'})
 const morgan = require('morgan')
 
 const ApiError = require('./Utils/apError')
-
-const app = express();
-
-
 const dbConnection = require('./Config/database')
 const CategoryRoute= require('./Routes/categoryRoute')
 const globalError = require('./MIddlewares/errorMiddleware')
@@ -17,18 +13,22 @@ const globalError = require('./MIddlewares/errorMiddleware')
 const subCategoryRoute = require('./Routes/subCategoryRoute')
 const brandRoute = require('./Routes/brandRoute')
 const productRoute = require('./Routes/productRoute')
+
+
+//DataBase
+dbConnection();
+
+//express app
+const app = express()
 // Logging the requests
 if (process.env.NODE_ENV ==='development') {
-
     console.log(`mode : ${process.env.NODE_ENV}`);
     app.use(morgan('dev'))
 }
 
 //Middlewares
 app.use(express.json());
-
-//DataBase
-dbConnection();
+app.use(express.static(path.join(__dirname,'uploads')));
 
 //Mount Routes
 app.use('/api/v1/categories',CategoryRoute);

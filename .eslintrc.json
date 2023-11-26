@@ -29,7 +29,7 @@
             }
         ],
         "no-unused-vars": [
-            "warn",
+            "false",
             {
                 "argsIgnorePattern": "req|res|next|val"
             }

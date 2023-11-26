@@ -38,7 +38,10 @@ exports.createSubCategory = asyncHandler(async (req, res) => {
       const limit =req.query.limit|| 3;
       const skip = (page-1)*limit;
 
-       const subCategories = await SubCategoryModel.find(req.filterObj).limit(limit).skip(skip)
+      
+      console.log(req.params)
+
+       const subCategories = await SubCategoryModel.find(req.filterObj).limit(limit).skip(skip).populate({path:'category',select:'name -_id'}).select('name category')
 
         res.status(200).json({results:subCategories.length,page,data:subCategories})
       });

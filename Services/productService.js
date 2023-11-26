@@ -57,11 +57,13 @@ exports.getProducts = asyncHandler (async(req,res)=>{
 
     //searching
     if(req.query.keyword){
-        const query = {}
+        const query = {};
+        
         query.$or = [
-            {title: new RegExp(req.query.keyword,'i')},
-            {description: new RegExp(req.query.keyword,'i')}
+            {title:{$regex:req.query.keyword,options:'i'}},
+            {description:{ regex:req.query.keyword,options:'i'}}
         ]
+        
         mongooseQuery =  mongooseQuery.find(query)
     }
 });
