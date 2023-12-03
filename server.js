@@ -1,9 +1,9 @@
+/* eslint-disable no-unused-vars */
 const path = require('path');
 
 const express = require('express');
 const morgan = require('morgan');
-const dotenv = require('dotenv')
-dotenv.config({path:'config.env'})
+const dotenv = require('dotenv').config({path:'config.env'})
 const ApiError = require('./utils/apiError');
 const globalError = require('./middlewares/errorMiddleware');
 const dbConnection = require('./config/database');
