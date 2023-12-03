@@ -1,63 +1,51 @@
- const slugify =require('slugify')
- const asyncHandler = require('express-async-handler')
- const {brandModel}=require('../Models/brandModel')
- const ApiError = require('../Utils/apError')
- 
+const asyncHandler = require('express-async-handler');
+const { v4: uuidv4 } = require('uuid');
+const sharp = require('sharp');
 
- exports.getBrands =asyncHandler( async(req,res)=>{
-      const page =req.query.page||1;
-      const limit =req.query.limit|| 3;
-      const skip = (page-1)*limit;
-      const Brands = await brandModel.find({}).limit(limit).skip(skip)
+const factory = require('./handlersFactory');
+const { uploadSingleImage } = require('../middlewares/uploadImageMiddleware');
+const Brand = require('../models/brandModel');
 
-        res.status(200).json({results:Brands.length,page,data:Brands})
-      } 
-  )
+// Upload single image
+exports.uploadBrandImage = uploadSingleImage('image');
 
-  exports.createBrand = asyncHandler( async(req,res)=>{
-    
-    const {name} = req.body
-    const brand = await brandModel.create({name,slug:slugify(name)})
-      res.status(201).json({data:brand})
-      
-   })
+// Image processing
+exports.resizeImage = asyncHandler(async (req, res, next) => {
+  const filename = `brand-${uuidv4()}-${Date.now()}.jpeg`;
 
+  await sharp(req.file.buffer)
+    .resize(600, 600)
+    .toFormat('jpeg')
+    .jpeg({ quality: 95 })
+    .toFile(`uploads/brands/${filename}`);
 
-   // find brand by it's id 
-   exports.getBrand = asyncHandler( async (req,res,next)=>{
-    const{id} = req.params
-    const brand = await brandModel.findById(id)
-    if (!brand) {
-      return next(new ApiError(`the brand for this id ${id} not found `,404))
-    }
-    res.status(200).json({msg:"the brand founded ",brand})
-   }
-)
+  // Save image into our db 
+   req.body.image = filename;
 
+  next();
+});
 
-// update brand name by it's id 
-exports.updateBrand = asyncHandler(async(req,res,next)=>{
-  const {id}=req.params
-  const {name}=req.body
-  const brand = await brandModel.findOneAndUpdate(
-    {_id:id},
-    {name,slug:slugify(name)},
-    {new:true}
-  )
-  if (!brand) {
-    return next(new ApiError(`the brand for this id ${id} not found `,404))
-   }
-  res.status(200).json({msg:"the brand updated ",brand})
-})
+// @desc    Get list of brands
+// @route   GET /api/v1/brands
+// @access  Public
+exports.getBrands = factory.getAll(Brand);
 
-// delete brand by it's id
-exports.deleteBrand = asyncHandler(async(req,res,next)=>{
+// @desc    Get specific brand by id
+// @route   GET /api/v1/brands/:id
+// @access  Public
+exports.getBrand = factory.getOne(Brand);
 
- const {id}=req.params
- const brand = await brandModel.findByIdAndDelete(id);
+// @desc    Create brand
+// @route   POST  /api/v1/brands
+// @access  Private
+exports.createBrand = factory.createOne(Brand);
 
- if (!brand) { return next( new ApiError(`the brand for this id ${id} not found `,404)) }
+// @desc    Update specific brand
+// @route   PUT /api/v1/brands/:id
+// @access  Private
+exports.updateBrand = factory.updateOne(Brand);
 
-res.status(200).json({msg:"the brand deleted ",brand})
-
-})
+// @desc    Delete specific brand
+// @route   DELETE /api/v1/brands/:id
+// @access  Private
+exports.deleteBrand = factory.deleteOne(Brand);

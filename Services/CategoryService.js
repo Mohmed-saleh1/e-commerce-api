@@ -1,104 +1,51 @@
- const slugify =require('slugify')
-const multer = require('multer')
+const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
-// eslint-disable-next-line import/no-extraneous-dependencies
-const sharp = require('sharp')
+const asyncHandler = require('express-async-handler');
 
- const asyncHandler = require('express-async-handler')
- const {categoryModel}=require('../Models/categoryModel')
- const ApiError = require('../Utils/apError')
+const factory = require('./handlersFactory');
+const { uploadSingleImage } = require('../middlewares/uploadImageMiddleware');
+const Category = require('../models/categoryModel');
 
-//  const multerStorage = multer.diskStorage({
-//   destination:function(req,file,cb){
-//    cb(null,'uploads/categories')
-//   },
+// Upload single image
+exports.uploadCategoryImage = uploadSingleImage('image');
 
-//   filename:function(req,file,cb){
-//     const ext = file.mimetype.split('/')[1];
-//     const filename = `category-${uuidv4()}-${Date.now()}.${ext}`;
-//     cb(null,filename)
-//   }
-//  })
- const multerFilter = (req,file,cb)=>{
-  if(file.mimetype!== 'image/jpeg' && file.mimetype!== 'image/png' && file.mimetype!== 'image/jpg'){
-    return cb(new ApiError('only jpg,png and jpeg images are allowed',500),false)
-  }
-  cb(null,true)
- }
-
- const multerStorage = multer.memoryStorage()
-
- const upload = multer({storage:multerStorage,fileFilter:multerFilter})
-exports.uploadCategoryImage = upload.single('image')
-
-exports.resizeImage= asyncHandler(async (req,res,next)=>{
-
- const filename = `category-${uuidv4()}-${Date.now()}.jpeg`;
+// Image processing
+exports.resizeImage = asyncHandler(async (req, res, next) => {
+  const filename = `category-${uuidv4()}-${Date.now()}.jpeg`;
 
   await sharp(req.file.buffer)
-  .resize(200,200)
-  .toFormat('jpeg')
-  .jpeg({quality:90})
-  .toFile(`uploads/categories/${filename}.jpeg`)
+    .resize(600, 600)
+    .toFormat('jpeg')
+    .jpeg({ quality: 95 })
+    .toFile(`uploads/categories/${filename}`);
+
+  // Save image into our db
   req.body.image = filename;
 
   next();
 });
 
- exports.getCategories =asyncHandler( async(req,res)=>{
-      const page =req.query.page||1;
-      const limit =req.query.limit|| 3;
-      const skip = (page-1)*limit;
-      const categories = await categoryModel.find({}).limit(limit).skip(skip)
+// @desc    Get list of categories
+// @route   GET /api/v1/categories
+// @access  Public
+exports.getCategories = factory.getAll(Category);
 
-        res.status(200).json({results:categories.length,page,data:categories})
-      } 
-  )
+// @desc    Get specific category by id
+// @route   GET /api/v1/categories/:id
+// @access  Public
+exports.getCategory = factory.getOne(Category);
 
-  exports.createCategory = asyncHandler( async(req,res)=>{
-    
-    
-    const category = await categoryModel.create(req.body)
-      res.status(201).json({data:category})
-      
-   })
+// @desc    Create category
+// @route   POST  /api/v1/categories
+// @access  Private
+exports.createCategory = factory.createOne(Category);
 
+// @desc    Update specific category
+// @route   PUT /api/v1/categories/:id
+// @access  Private
+exports.updateCategory = factory.updateOne(Category);
 
-   // find category by it's id 
-   exports.getCategory = asyncHandler( async (req,res,next)=>{
-    const{id} = req.params
-    const category = await categoryModel.findById(id)
-    if (!category) {
-      return next(new ApiError(`the category for this id ${id} not found `,404))
-    }
-    res.status(200).json({msg:"the category founded ",category})
-   }
-)
-
-
-// update category name by it's id 
-exports.updateCategory = asyncHandler(async(req,res,next)=>{
-  const {id}=req.params
-  const {name}=req.body
-  const category = await categoryModel.findOneAndUpdate(
-    {_id:id},
-    {name,slug:slugify(name)},
-    {new:true}
-  )
-  if (!category) {
-    return next(new ApiError(`the category for this id ${id} not found `,404))
-   }
-  res.status(200).json({msg:"the category updated ",category})
-})
-
-// delete category by it's id
-exports.deletCategory = asyncHandler(async(req,res,next)=>{
-
- const {id}=req.params
- const category = await categoryModel.findByIdAndDelete(id);
-
- if (!category) { return next( new ApiError(`the category for this id ${id} not found `,404)) }
-
-res.status(200).json({msg:"the category deleted ",category})
-
-})
+// @desc    Delete specific category
+// @route   DELETE /api/v1/categories/:id
+// @access  Private
+exports.deleteCategory = factory.deleteOne(Category);

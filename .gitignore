@@ -1,6 +1,5 @@
-node_modules
-config.env
-Utils/dummyData
-.gitignore
-/uploads/categories/*
+node_modules/
 
+config.env
+
+uploads/

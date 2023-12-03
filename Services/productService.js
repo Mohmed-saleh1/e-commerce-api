@@ -1,96 +1,79 @@
-const slugify = require('slugify')
-const asyncHandler = require('express-async-handler')
-const ApiError = require('../Utils/apError')
+const asyncHandler = require('express-async-handler');
+const { v4: uuidv4 } = require('uuid');
+const sharp = require('sharp');
 
-const ProductModel = require('../Models/productModel')
+const { uploadMixOfImages } = require('../middlewares/uploadImageMiddleware');
+const factory = require('./handlersFactory');
+const Product = require('../models/productModel');
 
-// create Product 
+exports.uploadProductImages = uploadMixOfImages([
+  {
+    name: 'imageCover',
+    maxCount: 1,
+  },
+  {
+    name: 'images',
+    maxCount: 5,
+  },
+]);
 
-exports.createProduct = asyncHandler (async(req,res)=>{
+exports.resizeProductImages = asyncHandler(async (req, res, next) => {
+  // console.log(req.files);
+  //1- Image processing for imageCover
+  if (req.files.imageCover) {
+    const imageCoverFileName = `product-${uuidv4()}-${Date.now()}-cover.jpeg`;
 
-     req.body.slug = slugify(req.body.title);
+    await sharp(req.files.imageCover[0].buffer)
+      .resize(2000, 1333)
+      .toFormat('jpeg')
+      .jpeg({ quality: 95 })
+      .toFile(`uploads/products/${imageCoverFileName}`);
 
-    const product = await ProductModel.create(req.body);
-    res.status(201).json({
-        success: true,
-        data: product
-    })
+    // Save image into our db
+    req.body.imageCover = imageCoverFileName;
+  }
+  //2- Image processing for images
+  if (req.files.images) {
+    req.body.images = [];
+    await Promise.all(
+      req.files.images.map(async (img, index) => {
+        const imageName = `product-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
+
+        await sharp(img.buffer)
+          .resize(2000, 1333)
+          .toFormat('jpeg')
+          .jpeg({ quality: 95 })
+          .toFile(`uploads/products/${imageName}`);
+
+        // Save image into our db
+        req.body.images.push(imageName);
+      })
+    );
+
+    next();
+  }
 });
 
-// get all products
-exports.getProducts = asyncHandler (async(req,res)=>{
-    
-     //filteration 
-    // eslint-disable-next-line node/no-unsupported-features/es-syntax
-    const queryStringObj = {...req.query}
+// @desc    Get list of products
+// @route   GET /api/v1/products
+// @access  Public
+exports.getProducts = factory.getAll(Product, 'Products');
 
-    const excludeFields = ['limit','sort','page','fields'];
-    excludeFields.forEach((field) => delete  queryStringObj[field]);
-    let queryString = JSON.stringify(queryStringObj);
+// @desc    Get specific product by id
+// @route   GET /api/v1/products/:id
+// @access  Public
+exports.getProduct = factory.getOne(Product);
 
-    queryString = queryString.replace(/\b(gte|gt|lt|lte)\b/g,(match)=> `$${match}` )
-    
+// @desc    Create product
+// @route   POST  /api/v1/products
+// @access  Private
+exports.createProduct = factory.createOne(Product);
+// @desc    Update specific product
+// @route   PUT /api/v1/products/:id
+// @access  Private
+exports.updateProduct = factory.updateOne(Product);
 
-    //pageination
-    const page = req.query.page || 1;
-    const limit = req.query.limit || 10;
-    const skip = (page-1)*limit;
-
-    //build query
-    let mongooseQuery = ProductModel.find(JSON.parse(queryString)).limit(limit).skip(skip)
-    // .populate({path:'Category',select:'name -_id'})
-    const products = await mongooseQuery;
-    
-    // sorting
-    if(req.query.sort){
-        mongooseQuery =  mongooseQuery.sort(req.query.sort)
-        console.log(typeof(req.query.sort));
-    }
-
-     //selecting
-    if(req.query.fields){
-        const fields = req.query.fields.split(',').join(' ');
-        mongooseQuery =  mongooseQuery.select(fields)
-        console.log(fields);
-    }
-    res.status(200).json({ result:products.length,page,data: products,success: true})
-
-    //searching
-    if(req.query.keyword){
-        const query = {};
-        
-        query.$or = [
-            {title:{$regex:req.query.keyword,options:'i'}},
-            {description:{ regex:req.query.keyword,options:'i'}}
-        ]
-        
-        mongooseQuery =  mongooseQuery.find(query)
-    }
-});
-
-// get single product
-exports.getProduct = asyncHandler (async(req,res,next)=>{
-    const {id}=req.params
-    const product = await ProductModel.findById(id);
-    if(!product){  return next(new ApiError(`not product found for this id ${id}`,404)) }
-    res.status(200).json({ success: true,data: product })
-})
-
-// update product
-
-exports.updateProduct = asyncHandler (async(req,res,next)=>{
-    const {id}=req.params
-    req.body.slug = slugify(req.body.title);
-    const product = await ProductModel.findByIdAndUpdate(id,req.body,{new:true});
-    if(!product){  return next(new ApiError(`not product found for this id ${id}`,404)) }
-    res.status(200).json({ success: true,data: product })
-})
-
-// delete product
-
-exports.deleteProduct = asyncHandler (async(req,res,next)=>{
-    const {id}=req.params
-    const product = await ProductModel.findByIdAndDelete(id);
-    if(!product){  return next(new ApiError(`not product found for this id ${id}`,404)) }
-    res.status(200).json({ success: true,data: product })
-})
+// @desc    Delete specific product
+// @route   DELETE /api/v1/products/:id
+// @access  Private
+exports.deleteProduct = factory.deleteOne(Product);

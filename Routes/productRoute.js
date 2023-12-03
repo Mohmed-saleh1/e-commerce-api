@@ -1,32 +1,41 @@
-const express = require('express')
-
-const router = express.Router()
+const express = require('express');
+const {
+  getProductValidator,
+  createProductValidator,
+  updateProductValidator,
+  deleteProductValidator,
+} = require('../utils/validators/productValidator');
 
 const {
- getProduct,
- getProducts,
- createProduct,
- updateProduct,
- deleteProduct,
-} = require('../Services/productService')
+  getProducts,
+  getProduct,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  uploadProductImages,
+  resizeProductImages,
+} = require('../services/productService');
 
-const {
-    getProductValidation,
-    createProductValidation,
-    updateProductValidation,
-    deleteProductValidation
-} = require('../Utils/validations/productValidation')
+const router = express.Router();
 
-
-router.route('/')
+router
+  .route('/')
   .get(getProducts)
-  .post(createProductValidation,createProduct)
+  .post(
+    uploadProductImages,
+    resizeProductImages,
+    createProductValidator,
+    createProduct
+  );
+router
+  .route('/:id')
+  .get(getProductValidator, getProduct)
+  .put(
+    uploadProductImages,
+    resizeProductImages,
+    updateProductValidator,
+    updateProduct
+  )
+  .delete(deleteProductValidator, deleteProduct);
 
-
-router.route('/:id')
-  .get(getProductValidation,getProduct)
-  .put(updateProductValidation,updateProduct)
-  .delete(deleteProductValidation,deleteProduct)
-  
-
-module.exports=router;
+module.exports = router;
